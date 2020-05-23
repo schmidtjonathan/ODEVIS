@@ -11,11 +11,19 @@ Evaluation = collections.namedtuple("Evaluation", ["x", "y"])
 
 class DirectionField2D(object):
 
-    def __init__(self, ode_system, x_extent, y_extent, quiver_density=25):
+    def __init__(self, ode_system, x_extent, y_extent, quiver_density=25, axis_labels=None):
 
         min_x, max_x = x_extent
         min_y, max_y = y_extent
         dx = max((max_x - min_x, max_y - min_y)) / quiver_density
+
+        if axis_labels is None:
+            self.axis_labels = {
+                "x": "x",
+                "y": "y"
+            }
+        else:
+            self.axis_labels = axis_labels
 
         self.ode_system = ode_system
         self.x_extent, self.y_extent = x_extent, y_extent
@@ -37,6 +45,9 @@ class DirectionField2D(object):
 
         axis.set_xlim([self.x_extent[0] - 0.1, self.x_extent[1] + 0.1])
         axis.set_ylim([self.y_extent[0] - 0.1, self.y_extent[1] + 0.1])
+
+        axis.set_xlabel(self.axis_labels["x"])
+        axis.set_ylabel(self.axis_labels["y"])
 
         # Coordinate system
         axis.axhline(y=0, color='k', lw=.8)
@@ -66,6 +77,8 @@ class DirectionField2D(object):
                 (min(self.x_extent[0], self.y_extent[0]), max(self.x_extent[1], self.y_extent[1]))
             )
             ax[1].set_xticks(np.arange(solver.t_min, solver.t_max))
+            ax[1].legend()
+            ax[1].set_xlabel("t")
             ax[1].axhline(y=0, color='k', lw=.8)
             ax[1].axvline(x=0, color='k', lw=.8)
 
@@ -98,8 +111,8 @@ class DirectionField2D(object):
 
         fig, ax = plt.subplots(1, 2, num=str(solver))
         numerical_solution, = ax[0].plot([], [], lw=2, color=COLORS["gold"])
-        x_t_line, = ax[1].plot([], [], lw=2, color=COLORS["red"])
-        y_t_line, = ax[1].plot([], [], lw=2, color=COLORS["dark"])
+        x_t_line, = ax[1].plot([], [], lw=2, color=COLORS["red"], label=self.axis_labels["x"])
+        y_t_line, = ax[1].plot([], [], lw=2, color=COLORS["dark"], label=self.axis_labels["y"])
         t_range = []
         xdata, ydata = [], []
 

@@ -20,7 +20,6 @@ COLORS = dict(
 # matplotlib settings
 plt.style.use("seaborn-whitegrid")
 plt.rcParams['axes.axisbelow'] = True
-# plt.rcParams['axes.facecolor'] = "0.96"
 plt.rcParams["figure.figsize"] = (14, 7)
 
 QUIVER_OPTS = dict(
@@ -48,14 +47,20 @@ if __name__ == "__main__":
             return 1
 
         def y_dot(x, y):
-            return (1. - y**2) / (1. + x**2)
+            return 2*x
+            # return (1. - y**2) / (1. + x**2)
 
         x_extent = (-2.0, 2.0)
-        y_extent = (-1.0, 1.0)
+        y_extent = (-1.0, 5.0)
         x_0 = -2.0
-        y_0 = -0.9
+        y_0 = 4.0
         t_min = 0.0
         t_max = 4.0
+
+        axis_labels = {
+            "x": "x",
+            "y": "y"
+        }
 
     elif mode == "fish":
         """
@@ -84,6 +89,11 @@ if __name__ == "__main__":
         t_min = 0.0
         t_max = 20.0
 
+        axis_labels = {
+            "x": "prey",
+            "y": "hunter"
+        }
+
     elif mode == "pendulum":
         """
             PENDULUM (x = angle, y = angular velocity)
@@ -105,6 +115,11 @@ if __name__ == "__main__":
         t_min = 0.0
         t_max = 20.0
 
+        axis_labels = {
+            "x": r"angle $\theta$",
+            "y": r"angular velocity $\dot \theta$"
+        }
+
     elif mode == "sir":
         N = 10**6
         alpha = 0.4
@@ -118,21 +133,17 @@ if __name__ == "__main__":
             """ I """
             return k * y * x / N - alpha * y
 
-        # def x_dot(x, y):
-        #     """ I """
-        #     S = N - (x + y)
-        #     return (1.0 / N) * k * x * S - alpha * x
-
-        # def y_dot(x, y):
-        #     """ R """
-        #     return alpha * x
-
         x_extent = (-50000, N * 1.3)
         y_extent = (-50000, N * 1.3)
         x_0 = N - 1000
         y_0 = 1000
         t_min = 0.0
         t_max = 20.0
+
+        axis_labels = {
+            "x": "Susceptible",
+            "y": "Infectious"
+        }
 
     else:
         print(f"Unknown mode {mode}. (<mode> is one of {MODES})")
@@ -144,15 +155,24 @@ if __name__ == "__main__":
     print(f" .... {mode} .... ")
     print("=" * (len(mode) + 12))
 
-
     field = direction_field.DirectionField2D(
         ode_system=[x_dot, y_dot],
         x_extent=x_extent,
         y_extent=y_extent,
-        quiver_density=20,
+        quiver_density=30,
+        axis_labels=axis_labels,
     )
 
     euler_solver = solver.Euler(
+        [x_dot, y_dot],
+        step_size=2e-2,
+        x_0=x_0,
+        y_0=y_0,
+        t_min=t_min,
+        t_max=t_max
+    )
+
+    heun_solver = solver.Heun(
         [x_dot, y_dot],
         step_size=2e-2,
         x_0=x_0,
@@ -170,4 +190,4 @@ if __name__ == "__main__":
         t_max=t_max
     )
 
-    field.simulate(solver=rk4_solver)
+    field.simulate(solver=heun_solver)
