@@ -77,6 +77,28 @@ class Euler(Solver):
         return "Euler method"
 
 
+class Heun(Solver):
+    """ Heun Method """
+
+    def step(self):
+        x, y = self.state
+        k1 = Evaluation(
+            x=self.ode_system[0](x, y),
+            y=self.ode_system[1](x, y)
+        )
+        proposed_state = self.state + self.step_size * k1
+
+        k2 = k1 + Evaluation(
+            x=self.ode_system[0](proposed_state.x, proposed_state.y),
+            y=self.ode_system[1](proposed_state.x, proposed_state.y)
+        )
+
+        self.state += 0.5 * self.step_size * k2
+
+    def __str__(self):
+        return "Heun's method"
+
+
 class RK4(Solver):
     """ 4-th order Runge Kutta Method """
 
