@@ -78,9 +78,7 @@ if __name__ == "__main__":
         x_extent = (-2.0, 2.0)
         y_extent = (-1.0, 5.0)
         initial_value_condition = solver.Evaluation(x=-2.0, y=4.0)
-        t_min = 0.0
-        t_max = 4.0
-
+        time_domain = (0.0, 4.0)
         axis_labels = {
             "x": "x",
             "y": "y"
@@ -109,9 +107,7 @@ if __name__ == "__main__":
         x_extent = (0.0, 6.0)
         y_extent = (0.0, 6.0)
         initial_value_condition = solver.Evaluation(x=3.0, y=1.0)
-        t_min = 0.0
-        t_max = 20.0
-
+        time_domain = (0.0, 20.0)
         axis_labels = {
             "x": "prey",
             "y": "hunter"
@@ -134,9 +130,7 @@ if __name__ == "__main__":
         x_extent = (-2.0, 15)
         y_extent = (-6.0, 6.0)
         initial_value_condition = solver.Evaluation(x=0.0, y=5.0)
-        t_min = 0.0
-        t_max = 20.0
-
+        time_domain = (0.0, 20.0)
         axis_labels = {
             "x": r"angle $\theta$",
             "y": r"angular velocity $\dot \theta$"
@@ -158,9 +152,7 @@ if __name__ == "__main__":
         x_extent = (-50000, N * 1.3)
         y_extent = (-50000, N * 1.3)
         initial_value_condition = solver.Evaluation(x=N-1000.0, y=1000.0)
-        t_min = 0.0
-        t_max = 20.0
-
+        time_domain = (0.0, 20.0)
         axis_labels = {
             "x": "Susceptible",
             "y": "Infectious"
@@ -189,24 +181,21 @@ if __name__ == "__main__":
         [x_dot, y_dot],
         step_size=arg_stepsize,
         initial_value_condition=initial_value_condition,
-        t_min=t_min,
-        t_max=t_max
+        time_domain=time_domain,
     )
 
     heun_solver = solver.Heun(
         [x_dot, y_dot],
         step_size=arg_stepsize,
         initial_value_condition=initial_value_condition,
-        t_min=t_min,
-        t_max=t_max
+        time_domain=time_domain,
     )
 
     rk4_solver = solver.RK4(
         [x_dot, y_dot],
         step_size=arg_stepsize,
         initial_value_condition=initial_value_condition,
-        t_min=t_min,
-        t_max=t_max
+        time_domain=time_domain,
     )
 
     possible_solvers = dict(

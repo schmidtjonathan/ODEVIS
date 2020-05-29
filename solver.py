@@ -33,15 +33,14 @@ class Evaluation(Coords2D):
 
 
 class Solver(object):
-    def __init__(self, ode_system, step_size, initial_value_condition, t_min, t_max):
+    def __init__(self, ode_system, step_size, initial_value_condition, time_domain):
         self.ode_system = ode_system
         self.step_size = step_size
         self.initial_value_condition = initial_value_condition
-        self.t_min = t_min
-        self.t_max = t_max
+        self.t_min, self.t_max = time_domain
         self.state = initial_value_condition
 
-        if self.t_min >= 0.0:
+        if self.t_min > 0.0:
             self.reset(T=self.t_min)
 
     def step(self):
