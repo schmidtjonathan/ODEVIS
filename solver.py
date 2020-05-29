@@ -33,6 +33,20 @@ class Evaluation(Coords2D):
 
 
 class Solver(object):
+    """ Abstract class that implements a numerical solver for ODE systems.
+
+    For systems of ordinary differential equations (ODE), i.g., an analytic solution does not exist. Therefore
+    one employs numerical solvers that evaluate the approximate solution on a discretized grid.
+    Depending on the type of numerical ODE solver, the step() function must be overwritten.
+
+    Attributes:
+        ode_system: the system of ODEs represented as a list of callables.
+        step_size: the step size of the numerical solver. Must be >0. The step size is chosen as a trade-off between
+            speed (large stepsize) and accuracy (small stepsize)
+        initial_value_condition: for each variable of the ODE system a set of initial conditions at t_min in order to
+            achieve the particular solution to the system
+        time_domain: tuple (t_min, t_max) on which the simulation shall be executed
+    """
     def __init__(self, ode_system, step_size, initial_value_condition, time_domain):
         self.ode_system = ode_system
         self.step_size = step_size
@@ -44,15 +58,24 @@ class Solver(object):
             self.reset(T=self.t_min)
 
     def step(self):
+        """ Depending on the numerical solver, takes on step on the discretized grid to approximate the solution """
         raise NotImplementedError
 
     def reset(self, T=None):
+        """ Sets the state of the solver to a specific point in time
+
+        Args:
+            T: a time step T can be provided, then the solver is set to the state after T time steps.
+                If T is None (default) the solver state is reset to the initial conditions.
+        """
         self.state = self.initial_value_condition
         if T is not None:
             for step in np.arange(0.0, T, self.step_size):
                 self.step()
 
     def __call__(self):
+        """ For the given time domain, execute the simulation by successively calling the step function """
+
         print(f"Running simulation for t in [{self.t_min}, {self.t_max}] , dt = {self.step_size}")
         for step in tqdm.tqdm(np.arange(self.t_min, self.t_max, self.step_size)):
             yield self.state.x, self.state.y, step

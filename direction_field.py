@@ -7,6 +7,18 @@ from main import QUIVER_OPTS, COLORS
 
 
 class DirectionField2D(object):
+    """ Representation of a 2 dimensional direction- (or slope-) field.
+
+    This class is mainly designed to carry out the visualization of the simulation.
+
+    Attributes:
+        ode_system: the system of ODEs represented as a list of callables
+        x_extent: the boundaries of the x-axis for the visulaization as tuple (x_min, x_max)
+        y_extent: the boundaries of the y-axis for the visulaization as tuple (y_min, y_max)
+        quiver_density: integer, defining how dense the slope field is to be visualized. The number
+            determines how many arrows representing the gradient shall be displayed per dimension
+        axis_labels: dict of axis labels. If None is provided, the axes are simply labeled "x" and "y"
+    """
 
     def __init__(self, ode_system, x_extent, y_extent, quiver_density=25, axis_labels=None):
 
@@ -30,6 +42,7 @@ class DirectionField2D(object):
         )
 
     def visualize_direction_field(self, axis):
+        """ Plots the slope field on the provided axis object """
 
         U, V = self.ode_system[0](self.X, self.Y), self.ode_system[1](self.X, self.Y)
         norm = np.sqrt(U**2 + V**2)
@@ -53,6 +66,7 @@ class DirectionField2D(object):
         return axis
 
     def simulate(self, solver):
+        """ Method that carries out the visualization (animation) of the numerical ODE solver """
 
         """ <Animation stuff> """
 
