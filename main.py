@@ -8,6 +8,7 @@ import direction_field
 import solver
 
 # colors:
+# (Credits to Prof. Philipp Hennig, University of Tuebingen)
 COLORS = dict(
     dark = np.array([51.0, 51.0, 51.0]) / 255.0,
     red = np.array([141.0, 45.0, 57.0]) / 255.0,
@@ -22,6 +23,7 @@ plt.style.use("seaborn-whitegrid")
 plt.rcParams['axes.axisbelow'] = True
 plt.rcParams["figure.figsize"] = (14, 7)
 
+
 QUIVER_OPTS = dict(
     cmap=matplotlib.cm.jet,
     pivot="middle",
@@ -30,7 +32,7 @@ QUIVER_OPTS = dict(
 )
 
 
-MODES = ["simple", "fish", "pendulum", "sir"]
+MODES = ["simple", "lotka_volterra", "pendulum", "sir"]
 SOLVERS = ["euler", "heun", "rk4"]
 
 
@@ -84,24 +86,24 @@ if __name__ == "__main__":
             "y": "y"
         }
 
-    elif arg_mode == "fish":
+    elif arg_mode == "lotka_volterra":
         """
-            POPULATION OF SARDINES AND TUNA
+            POPULATION OF HUNTERS AND PREY
         """
-        # Procreation rate of sardines
+        # Procreation rate of prey
         alpha = 2. / 3.
-        # hunting efficiency of tuna
+        # hunting efficiency of hunters
         beta = 4. / 3.
-        # death rate of tuna
+        # death rate of hunters
         gamma = 1.
-        # proportionality factor of how tuna procreate given the amount of food (sardines)
+        # proportionality factor of how hunters procreate given the amount of food (prey)
         delta = 1.
         def x_dot(x, y):
-            ''' d/dt (f_sardines(x, y)) -- Models the population of sardines over time'''
+            ''' d/dt (f_prey(x, y)) -- Models the population of prey over time'''
             return alpha * x - beta * x * y
 
         def y_dot(x, y):
-            ''' d/dt (f_tuna(x, y)) -- Models the population of tuna over time'''
+            ''' d/dt (f_hunters(x, y)) -- Models the population of hunters over time'''
             return delta * x * y - gamma * y
 
         x_extent = (0.0, 6.0)

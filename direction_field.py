@@ -6,9 +6,6 @@ import matplotlib.animation as animation
 from main import QUIVER_OPTS, COLORS
 
 
-Evaluation = collections.namedtuple("Evaluation", ["x", "y"])
-
-
 class DirectionField2D(object):
 
     def __init__(self, ode_system, x_extent, y_extent, quiver_density=25, axis_labels=None):
