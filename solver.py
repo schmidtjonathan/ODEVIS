@@ -55,8 +55,8 @@ class Solver(object):
     def __call__(self):
         print(f"Running simulation for t in [{self.t_min}, {self.t_max}] , dt = {self.step_size}")
         for step in tqdm.tqdm(np.arange(self.t_min, self.t_max, self.step_size)):
-            self.step()
             yield self.state.x, self.state.y, step
+            self.step()
 
         print("Done!")
 
