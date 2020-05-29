@@ -77,8 +77,7 @@ if __name__ == "__main__":
 
         x_extent = (-2.0, 2.0)
         y_extent = (-1.0, 5.0)
-        x_0 = -2.0
-        y_0 = 4.0
+        initial_value_condition = solver.Evaluation(x=-2.0, y=4.0)
         t_min = 0.0
         t_max = 4.0
 
@@ -109,8 +108,7 @@ if __name__ == "__main__":
 
         x_extent = (0.0, 6.0)
         y_extent = (0.0, 6.0)
-        x_0 = 3.0
-        y_0 = 1.0
+        initial_value_condition = solver.Evaluation(x=3.0, y=1.0)
         t_min = 0.0
         t_max = 20.0
 
@@ -135,8 +133,7 @@ if __name__ == "__main__":
 
         x_extent = (-2.0, 15)
         y_extent = (-6.0, 6.0)
-        x_0 = 0.0
-        y_0 = 5.0
+        initial_value_condition = solver.Evaluation(x=0.0, y=5.0)
         t_min = 0.0
         t_max = 20.0
 
@@ -160,8 +157,7 @@ if __name__ == "__main__":
 
         x_extent = (-50000, N * 1.3)
         y_extent = (-50000, N * 1.3)
-        x_0 = N - 1000
-        y_0 = 1000
+        initial_value_condition = solver.Evaluation(x=N-1000.0, y=1000.0)
         t_min = 0.0
         t_max = 20.0
 
@@ -192,8 +188,7 @@ if __name__ == "__main__":
     euler_solver = solver.Euler(
         [x_dot, y_dot],
         step_size=arg_stepsize,
-        x_0=x_0,
-        y_0=y_0,
+        initial_value_condition=initial_value_condition,
         t_min=t_min,
         t_max=t_max
     )
@@ -201,8 +196,7 @@ if __name__ == "__main__":
     heun_solver = solver.Heun(
         [x_dot, y_dot],
         step_size=arg_stepsize,
-        x_0=x_0,
-        y_0=y_0,
+        initial_value_condition=initial_value_condition,
         t_min=t_min,
         t_max=t_max
     )
@@ -210,8 +204,7 @@ if __name__ == "__main__":
     rk4_solver = solver.RK4(
         [x_dot, y_dot],
         step_size=arg_stepsize,
-        x_0=x_0,
-        y_0=y_0,
+        initial_value_condition=initial_value_condition,
         t_min=t_min,
         t_max=t_max
     )

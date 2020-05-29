@@ -33,14 +33,13 @@ class Evaluation(Coords2D):
 
 
 class Solver(object):
-    def __init__(self, ode_system, step_size, x_0, y_0, t_min, t_max):
+    def __init__(self, ode_system, step_size, initial_value_condition, t_min, t_max):
         self.ode_system = ode_system
         self.step_size = step_size
-        self.x_0 = x_0
-        self.y_0 = y_0
+        self.initial_value_condition = initial_value_condition
         self.t_min = t_min
         self.t_max = t_max
-        self.state = Evaluation(x_0, y_0)
+        self.state = initial_value_condition
 
         if self.t_min >= 0.0:
             self.reset(T=self.t_min)
@@ -49,7 +48,7 @@ class Solver(object):
         raise NotImplementedError
 
     def reset(self, T=None):
-        self.state = Evaluation(self.x_0, self.y_0)
+        self.state = self.initial_value_condition
         if T is not None:
             for step in np.arange(0.0, T, self.step_size):
                 self.step()
