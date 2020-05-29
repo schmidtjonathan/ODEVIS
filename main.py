@@ -1,4 +1,4 @@
-import sys
+import argparse
 
 import numpy as np
 import matplotlib
@@ -31,18 +31,43 @@ QUIVER_OPTS = dict(
 
 
 MODES = ["simple", "fish", "pendulum", "sir"]
+SOLVERS = ["euler", "heun", "rk4"]
 
 
 if __name__ == "__main__":
 
-    args = sys.argv
-    if len(args) < 2:
-        print(f"Usage: python main.py <mode>  (<mode> is one of {MODES})")
-        exit(0)
+    parser = argparse.ArgumentParser()
 
-    mode = sys.argv[1]
+    parser.add_argument(
+        "mode",
+        help=f"Which ode system to simulate. One of {MODES}",
+        type=str,
+        choices=MODES
+    )
 
-    if mode == "simple":
+    parser.add_argument(
+        "--solver",
+        "-s",
+        help=f"Which solver to use for simulation. One of {SOLVERS}",
+        type=str,
+        required=True,
+        choices=SOLVERS
+    )
+
+    parser.add_argument(
+        "--stepsize",
+        "-d",
+        help="Stepsize for the solver. Must be > 0.",
+        type=float,
+        default=2e-2
+    )
+
+    args = parser.parse_args()
+    arg_mode = args.mode
+    arg_solver = args.solver
+    arg_stepsize = args.stepsize
+
+    if arg_mode == "simple":
         def x_dot(x, y):
             return 1
 
@@ -62,7 +87,7 @@ if __name__ == "__main__":
             "y": "y"
         }
 
-    elif mode == "fish":
+    elif arg_mode == "fish":
         """
             POPULATION OF SARDINES AND TUNA
         """
@@ -94,7 +119,7 @@ if __name__ == "__main__":
             "y": "hunter"
         }
 
-    elif mode == "pendulum":
+    elif arg_mode == "pendulum":
         """
             PENDULUM (x = angle, y = angular velocity)
         """
@@ -120,7 +145,7 @@ if __name__ == "__main__":
             "y": r"angular velocity $\dot \theta$"
         }
 
-    elif mode == "sir":
+    elif arg_mode == "sir":
         N = 10**6
         alpha = 0.4
         k = 3.0
@@ -146,14 +171,14 @@ if __name__ == "__main__":
         }
 
     else:
-        print(f"Unknown mode {mode}. (<mode> is one of {MODES})")
+        print(f"Unknown mode {arg_mode}. (<mode> is one of {MODES})")
         exit(0)
 
     # Start simulation
 
-    print("=" * (len(mode) + 12))
-    print(f" .... {mode} .... ")
-    print("=" * (len(mode) + 12))
+    print("=" * (len(arg_mode) + 12))
+    print(f" .... {arg_mode} .... ")
+    print("=" * (len(arg_mode) + 12))
 
     field = direction_field.DirectionField2D(
         ode_system=[x_dot, y_dot],
@@ -163,9 +188,10 @@ if __name__ == "__main__":
         axis_labels=axis_labels,
     )
 
+
     euler_solver = solver.Euler(
         [x_dot, y_dot],
-        step_size=2e-2,
+        step_size=arg_stepsize,
         x_0=x_0,
         y_0=y_0,
         t_min=t_min,
@@ -174,7 +200,7 @@ if __name__ == "__main__":
 
     heun_solver = solver.Heun(
         [x_dot, y_dot],
-        step_size=2e-2,
+        step_size=arg_stepsize,
         x_0=x_0,
         y_0=y_0,
         t_min=t_min,
@@ -183,11 +209,17 @@ if __name__ == "__main__":
 
     rk4_solver = solver.RK4(
         [x_dot, y_dot],
-        step_size=2e-2,
+        step_size=arg_stepsize,
         x_0=x_0,
         y_0=y_0,
         t_min=t_min,
         t_max=t_max
     )
 
-    field.simulate(solver=heun_solver)
+    possible_solvers = dict(
+        euler=euler_solver,
+        heun=heun_solver,
+        rk4=rk4_solver
+    )
+
+    field.simulate(solver=possible_solvers[arg_solver])
