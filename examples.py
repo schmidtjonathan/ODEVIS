@@ -4,32 +4,9 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-import direction_field
 import solver
-
-# colors:
-# (Credits to Prof. Philipp Hennig, University of Tuebingen)
-COLORS = dict(
-    dark = np.array([51.0, 51.0, 51.0]) / 255.0,
-    red = np.array([141.0, 45.0, 57.0]) / 255.0,
-    gold = np.array([174.0, 159.0, 109.0]) / 255.0,
-    gray = np.array([175.0, 179.0, 183.0]) / 255.0,
-    lred = np.array([1, 1, 1]) - 0.5 * (np.array([1, 1, 1]) - np.array([141.0, 45.0, 57.0]) / 255.0),
-    lgold = np.array([1, 1, 1]) - 0.5 * (np.array([1, 1, 1]) - np.array([174.0, 159.0, 109.0]) / 255.0),
-)
-
-# matplotlib settings
-plt.style.use("seaborn-whitegrid")
-plt.rcParams['axes.axisbelow'] = True
-plt.rcParams["figure.figsize"] = (14, 7)
-
-
-QUIVER_OPTS = dict(
-    cmap=matplotlib.cm.jet,
-    pivot="middle",
-    units="xy",
-    alpha=0.6
-)
+import visualization
+import ode
 
 
 MODES = ["simple", "lotka_volterra", "pendulum", "sir"]
@@ -64,6 +41,12 @@ if __name__ == "__main__":
         default=2e-2
     )
 
+    parser.add_argument(
+        "--animate",
+        help="Whether or not to simulate the numerical solver by means of an animation",
+        action="store_true",
+    )
+
     args = parser.parse_args()
     arg_mode = args.mode
     arg_solver = args.solver
@@ -77,14 +60,12 @@ if __name__ == "__main__":
             return 2*x
             # return (1. - y**2) / (1. + x**2)
 
-        x_extent = (-2.0, 2.0)
-        y_extent = (-1.0, 5.0)
-        initial_value_condition = solver.Evaluation(x=-2.0, y=4.0)
-        time_domain = (0.0, 4.0)
-        axis_labels = {
-            "x": "x",
-            "y": "y"
-        }
+        x_extent = (-5.0, 5.0)
+        y_extent = (-1.0, 30.0)
+        time_domain = (0.0, 11.0)
+
+        ode_system = ode.ODE_System([x_dot, y_dot])
+        initial_value_condition = np.array([-5.0, 25.0])
 
     elif arg_mode == "lotka_volterra":
         """
@@ -108,12 +89,10 @@ if __name__ == "__main__":
 
         x_extent = (0.0, 6.0)
         y_extent = (0.0, 6.0)
-        initial_value_condition = solver.Evaluation(x=3.0, y=1.0)
         time_domain = (0.0, 20.0)
-        axis_labels = {
-            "x": "prey",
-            "y": "hunter"
-        }
+
+        ode_system = ode.ODE_System([x_dot, y_dot])
+        initial_value_condition = np.array([3.0, 1.0])
 
     elif arg_mode == "pendulum":
         """
@@ -131,70 +110,54 @@ if __name__ == "__main__":
 
         x_extent = (-2.0, 15)
         y_extent = (-6.0, 6.0)
-        initial_value_condition = solver.Evaluation(x=0.0, y=5.0)
         time_domain = (0.0, 20.0)
-        axis_labels = {
-            "x": r"angle $\theta$",
-            "y": r"angular velocity $\dot \theta$"
-        }
+
+        ode_system = ode.ODE_System([x_dot, y_dot])
+        initial_value_condition = np.array([0.0, 5.0])
 
     elif arg_mode == "sir":
         N = 10**6
-        alpha = 0.4
-        k = 3.0
+        alpha = 1.0 / 14.0
+        k = 0.53
 
-        def x_dot(x, y):
+        def x_dot(x, y, z):
             """ S """
             return -k * y * x / N
 
-        def y_dot(x, y):
+        def y_dot(x, y, z):
             """ I """
             return k * y * x / N - alpha * y
 
+        def z_dot(x, y, z):
+            return alpha * y
+
         x_extent = (-50000, N * 1.3)
         y_extent = (-50000, N * 1.3)
-        initial_value_condition = solver.Evaluation(x=N-1000.0, y=1000.0)
-        time_domain = (0.0, 20.0)
-        axis_labels = {
-            "x": "Susceptible",
-            "y": "Infectious"
-        }
+        time_domain = (0.0, 60.0)
+
+        ode_system = ode.ODE_System([x_dot, y_dot, z_dot])
+        initial_value_condition = np.array([N-1000.0, 1000.0, 0.0])
 
     else:
         print(f"Unknown mode {arg_mode}. (<mode> is one of {MODES})")
         exit(0)
 
-    # Start simulation
-
-    print("=" * (len(arg_mode) + 12))
-    print(f" .... {arg_mode} .... ")
-    print("=" * (len(arg_mode) + 12))
-
-    field = direction_field.DirectionField2D(
-        ode_system=[x_dot, y_dot],
-        x_extent=x_extent,
-        y_extent=y_extent,
-        quiver_density=30,
-        axis_labels=axis_labels,
-    )
-
-
     euler_solver = solver.Euler(
-        [x_dot, y_dot],
+        ode_system=ode_system,
         step_size=arg_stepsize,
         initial_value_condition=initial_value_condition,
         time_domain=time_domain,
     )
 
     heun_solver = solver.Heun(
-        [x_dot, y_dot],
+        ode_system=ode_system,
         step_size=arg_stepsize,
         initial_value_condition=initial_value_condition,
         time_domain=time_domain,
     )
 
     rk4_solver = solver.RK4(
-        [x_dot, y_dot],
+        ode_system=ode_system,
         step_size=arg_stepsize,
         initial_value_condition=initial_value_condition,
         time_domain=time_domain,
@@ -206,4 +169,7 @@ if __name__ == "__main__":
         rk4=rk4_solver
     )
 
-    field.simulate(solver=possible_solvers[arg_solver])
+    if args.animate:
+        visualization.animate_solution(solver=possible_solvers[arg_solver])
+    else:
+        visualization.plot_solution(solver=possible_solvers[arg_solver])

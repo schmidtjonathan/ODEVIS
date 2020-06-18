@@ -1,9 +1,91 @@
-import collections
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-from main import QUIVER_OPTS, COLORS
+# colors:
+# (Credits to Prof. Philipp Hennig, University of Tuebingen)
+COLORS = dict(
+    dark = np.array([51.0, 51.0, 51.0]) / 255.0,
+    red = np.array([141.0, 45.0, 57.0]) / 255.0,
+    gold = np.array([174.0, 159.0, 109.0]) / 255.0,
+    gray = np.array([175.0, 179.0, 183.0]) / 255.0,
+    lred = np.array([1, 1, 1]) - 0.5 * (np.array([1, 1, 1]) - np.array([141.0, 45.0, 57.0]) / 255.0),
+    lgold = np.array([1, 1, 1]) - 0.5 * (np.array([1, 1, 1]) - np.array([174.0, 159.0, 109.0]) / 255.0),
+)
+
+# matplotlib settings
+plt.style.use("seaborn-whitegrid")
+plt.rcParams['axes.axisbelow'] = True
+plt.rcParams["figure.figsize"] = (14, 7)
+plt.rcParams["axes.prop_cycle"] = matplotlib.cycler(color=list(COLORS.values()))
+
+
+def plot_solution(solver):
+    fig, ax = plt.subplots(num=str(solver))
+    evaluations = solver.solve()
+    for eq in range(solver.num_equations):
+        ax.plot(evaluations[:, eq], color=f"C{eq}")
+    plt.show()
+
+
+def animate_solution(solver):
+
+    def init():
+        """ Initialize the animation
+        Plot the vector field as background and initialize the line of the solution function
+        """
+
+        ax.set_title("Time/Value space")
+
+        ax.set_xlim(
+            (solver.t_min, solver.t_max)
+        )
+
+        ax.set_xticks(np.arange(solver.t_min, solver.t_max))
+        ax.legend()
+        ax.set_xlabel("t")
+        ax.axhline(y=0, color='k', lw=.8)
+        ax.axvline(x=0, color='k', lw=.8)
+
+        for i, line in enumerate(over_time_lines):
+            line.set_data(t_range, variable_data[i])
+
+    def run(data):
+        """ Update the data of the animation """
+        t, evaluation = data
+        for i, v in enumerate(evaluation):
+            variable_data[i].append(v)
+        t_range.append(t)
+
+        # Adjust y axis of the plot
+        ax_y_min, ax_y_max = ax.get_ylim()
+        eval_min, eval_max = evaluation.min(), evaluation.max()
+        adjust_ylim = False
+        if eval_min < ax_y_min:
+            ax_y_min = eval_min - 0.2 * np.abs(eval_min)
+            adjust_ylim = True
+        if eval_max > ax_y_max:
+            ax_y_max = eval_max + 0.2 * np.abs(eval_max)
+            adjust_ylim = True
+
+        if adjust_ylim:
+            ax.set_ylim([ax_y_min, ax_y_max])
+
+        for i, line in enumerate(over_time_lines):
+            line.set_data(t_range, variable_data[i])
+
+    fig, ax = plt.subplots(num=str(solver))
+
+    over_time_lines = [
+        line for line, in [ax.plot([], [], color=f"C{i}") for i in range(solver.num_equations)]
+    ]
+
+    t_range = []
+    variable_data = [[] for _ in range(solver.num_equations)]
+
+    ani = animation.FuncAnimation(fig, run, solver, blit=False, interval=10, repeat=False, init_func=init)
+    plt.show()
 
 
 class DirectionField2D(object):
@@ -35,23 +117,31 @@ class DirectionField2D(object):
             self.axis_labels = axis_labels
 
         self.ode_system = ode_system
+        if len(self.ode_system) != 2:
+            raise ValueError(f"You must provide exactly two ODEs, received {len(self.ode_system)}")
         self.x_extent, self.y_extent = x_extent, y_extent
         self.X, self.Y = np.meshgrid(
             np.arange(min_x, max_x, dx),
             np.arange(min_y, max_y, dx)
         )
 
-    def visualize_direction_field(self, axis):
+    def visualize_direction_field(self, axis, quiver_opts=None):
         """ Plots the slope field on the provided axis object """
+
+        if quiver_opts is None:
+            quiver_opts = dict(
+                cmap=matplotlib.cm.jet,
+                pivot="middle",
+                units="xy",
+                alpha=0.6
+            )
 
         U, V = self.ode_system[0](self.X, self.Y), self.ode_system[1](self.X, self.Y)
         norm = np.sqrt(U**2 + V**2)
         mask_norm_nonzero = norm > 0.0
         U = np.divide(U, norm, where=mask_norm_nonzero)
         V = np.divide(V, norm, where=mask_norm_nonzero)
-        axis.quiver(self.X, self.Y, U, V, norm, **QUIVER_OPTS)
-
-        # plt.scatter(self.X, self.Y, s=5, edgecolors="red", facecolors="white")
+        axis.quiver(self.X, self.Y, U, V, norm, **quiver_opts)
 
         axis.set_xlim([self.x_extent[0] - 0.1, self.x_extent[1] + 0.1])
         axis.set_ylim([self.y_extent[0] - 0.1, self.y_extent[1] + 0.1])
@@ -65,24 +155,19 @@ class DirectionField2D(object):
 
         return axis
 
-    def simulate(self, solver):
+    def animate_solution(self, solver):
         """ Method that carries out the visualization (animation) of the numerical ODE solver """
-
-        """ <Animation stuff> """
 
         def init():
             """ Initialize the animation
             Plot the vector field as background and initialize the line of the solution function
             """
-            del xdata[:]
-            del ydata[:]
-            del t_range[:]
 
             ax[0].set_title("Phase space")
             ax[1].set_title("Time/Value space")
 
             ax[1].set_xlim(
-                (0, (solver.t_max - solver.t_min))
+                (solver.t_min, solver.t_max)
             )
             ax[1].set_ylim(
                 (min(self.x_extent[0], self.y_extent[0]), max(self.x_extent[1], self.y_extent[1]))
@@ -101,7 +186,7 @@ class DirectionField2D(object):
 
         def run(data):
             """ Update the data of the animation """
-            x, y, t = data
+            t, (x, y) = data
             xdata.append(x)
             ydata.append(y)
             t_range.append(t)
@@ -110,15 +195,7 @@ class DirectionField2D(object):
             x_t_line.set_data(t_range, xdata)
             y_t_line.set_data(t_range, ydata)
 
-            if round(t, 6).is_integer():
-                ax[0].scatter(x, y, s=15, edgecolors=COLORS["dark"], facecolors=COLORS["gold"], zorder=10)
-                ax[1].scatter(t, x, s=15, edgecolors=COLORS["gold"], facecolors=COLORS["red"], zorder=10)
-                ax[1].scatter(t, y, s=15, edgecolors=COLORS["gold"], facecolors=COLORS["dark"], zorder=10)
-                fig.suptitle(f"t = {int(t)}")
-
             return numerical_solution
-
-        """ </Animation stuff> """
 
         fig, ax = plt.subplots(1, 2, num=str(solver))
         numerical_solution, = ax[0].plot([], [], lw=2, color=COLORS["gold"])
