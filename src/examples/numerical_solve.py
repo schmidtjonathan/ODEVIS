@@ -1,15 +1,11 @@
 import argparse
 
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
 
-import solver
-import visualization
-import ode
+import odevis
 
 
-MODES = ["simple", "lotka_volterra", "pendulum", "sir"]
+MODES = ["lotka_volterra", "pendulum", "sir"]
 SOLVERS = ["euler", "heun", "rk4"]
 
 
@@ -52,22 +48,7 @@ if __name__ == "__main__":
     arg_solver = args.solver
     arg_stepsize = args.stepsize
 
-    if arg_mode == "simple":
-        def x_dot(x, y):
-            return 1
-
-        def y_dot(x, y):
-            return 2*x
-            # return (1. - y**2) / (1. + x**2)
-
-        x_extent = (-5.0, 5.0)
-        y_extent = (-1.0, 30.0)
-        time_domain = (0.0, 11.0)
-
-        ode_system = ode.ODE_System([x_dot, y_dot])
-        initial_value_condition = np.array([-5.0, 25.0])
-
-    elif arg_mode == "lotka_volterra":
+    if arg_mode == "lotka_volterra":
         """
             POPULATION OF HUNTERS AND PREY
         """
@@ -91,7 +72,7 @@ if __name__ == "__main__":
         y_extent = (0.0, 6.0)
         time_domain = (0.0, 20.0)
 
-        ode_system = ode.ODE_System([x_dot, y_dot])
+        ode_system = odevis.ODE_System([x_dot, y_dot])
         initial_value_condition = np.array([3.0, 1.0])
 
     elif arg_mode == "pendulum":
@@ -112,7 +93,7 @@ if __name__ == "__main__":
         y_extent = (-6.0, 6.0)
         time_domain = (0.0, 20.0)
 
-        ode_system = ode.ODE_System([x_dot, y_dot])
+        ode_system = odevis.ODE_System([x_dot, y_dot])
         initial_value_condition = np.array([0.0, 5.0])
 
     elif arg_mode == "sir":
@@ -135,28 +116,28 @@ if __name__ == "__main__":
         y_extent = (-50000, N * 1.3)
         time_domain = (0.0, 60.0)
 
-        ode_system = ode.ODE_System([x_dot, y_dot, z_dot])
+        ode_system = odevis.ODE_System([x_dot, y_dot, z_dot])
         initial_value_condition = np.array([N-1000.0, 1000.0, 0.0])
 
     else:
         print(f"Unknown mode {arg_mode}. (<mode> is one of {MODES})")
         exit(0)
 
-    euler_solver = solver.Euler(
+    euler_solver = odevis.solver.Euler(
         ode_system=ode_system,
         step_size=arg_stepsize,
         initial_value_condition=initial_value_condition,
         time_domain=time_domain,
     )
 
-    heun_solver = solver.Heun(
+    heun_solver = odevis.solver.Heun(
         ode_system=ode_system,
         step_size=arg_stepsize,
         initial_value_condition=initial_value_condition,
         time_domain=time_domain,
     )
 
-    rk4_solver = solver.RK4(
+    rk4_solver = odevis.solver.RK4(
         ode_system=ode_system,
         step_size=arg_stepsize,
         initial_value_condition=initial_value_condition,
@@ -170,6 +151,6 @@ if __name__ == "__main__":
     )
 
     if args.animate:
-        visualization.animate_solution(solver=possible_solvers[arg_solver])
+        odevis.animate_solution(solver=possible_solvers[arg_solver])
     else:
-        visualization.plot_solution(solver=possible_solvers[arg_solver])
+        odevis.plot_solution(solver=possible_solvers[arg_solver])
