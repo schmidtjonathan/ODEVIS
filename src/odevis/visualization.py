@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import functools
+
 
 # colors:
 # (Credits to Prof. Philipp Hennig, University of Tuebingen)
@@ -21,15 +23,24 @@ plt.rcParams["figure.figsize"] = (14, 7)
 plt.rcParams["axes.prop_cycle"] = matplotlib.cycler(color=list(COLORS.values()))
 
 
-def plot_solution(solver):
+def plot_solution(solver, ode_system, initial_value_condition, time_domain, axis_labels=None):
     fig, ax = plt.subplots(num=str(solver))
-    evaluations = solver.solve()
-    for eq in range(solver.num_equations):
-        ax.plot(evaluations[:, eq], color=f"C{eq}")
+    evaluations = solver.solve(
+        ode_system, initial_value_condition, time_domain
+    )
+
+    for eq in range(len(ode_system)):
+        ax.plot(
+            evaluations[:, eq],
+            color=f"C{eq}",
+            label=None if axis_labels is None else axis_labels[eq],
+        )
+    if axis_labels is not None:
+        ax.legend()
     plt.show()
 
 
-def animate_solution(solver):
+def animate_solution(solver, ode_system, initial_value_condition, time_domain, axis_labels=None, verbose=True):
 
     def init():
         """ Initialize the animation
@@ -37,12 +48,13 @@ def animate_solution(solver):
         """
 
         ax.set_title("Time/Value space")
+        t_min, t_max = time_domain
 
         ax.set_xlim(
-            (solver.t_min, solver.t_max)
+            (t_min, t_max)
         )
 
-        ax.set_xticks(np.arange(solver.t_min, solver.t_max))
+        ax.set_xticks(np.arange(t_min, t_max))
         ax.set_xlabel("t")
         ax.axhline(y=0, color='k', lw=.8)
         ax.axvline(x=0, color='k', lw=.8)
@@ -77,13 +89,15 @@ def animate_solution(solver):
     fig, ax = plt.subplots(num=str(solver))
 
     over_time_lines = [
-        line for line, in [ax.plot([], [], color=f"C{i}") for i in range(solver.num_equations)]
+        line for line, in [ax.plot([], [], color=f"C{i}") for i in range(len(ode_system))]
     ]
 
     t_range = []
-    variable_data = [[] for _ in range(solver.num_equations)]
+    variable_data = [[] for _ in range(len(ode_system))]
 
-    ani = animation.FuncAnimation(fig, run, solver, blit=False, interval=10, repeat=False, init_func=init)
+    gen = functools.partial(solver, ode_system, initial_value_condition, time_domain, verbose)
+
+    ani = animation.FuncAnimation(fig, run, gen, blit=False, interval=10, repeat=False, init_func=init)
     plt.show()
 
 
@@ -142,7 +156,7 @@ class DirectionField2D(object):
 
         return axis
 
-    def animate_solution(self, solver):
+    def animate_solution(self, solver, ode_system, initial_value_condition, time_domain, axis_labels=None, verbose=True):
         """ Method that carries out the visualization (animation) of the numerical ODE solver """
 
         def init():
@@ -153,13 +167,15 @@ class DirectionField2D(object):
             ax[0].set_title("Phase space")
             ax[1].set_title("Time/Value space")
 
+            t_min, t_max = time_domain
+
             ax[1].set_xlim(
-                (solver.t_min, solver.t_max)
+                (t_min, t_max)
             )
             ax[1].set_ylim(
                 (min(self.x_extent[0], self.y_extent[0]), max(self.x_extent[1], self.y_extent[1]))
             )
-            ax[1].set_xticks(np.arange(solver.t_min, solver.t_max))
+            ax[1].set_xticks(np.arange(t_min, t_max))
             ax[1].set_xlabel("t")
             ax[1].axhline(y=0, color='k', lw=.8)
             ax[1].axvline(x=0, color='k', lw=.8)
@@ -190,5 +206,7 @@ class DirectionField2D(object):
         t_range = []
         xdata, ydata = [], []
 
-        ani = animation.FuncAnimation(fig, run, solver, blit=False, interval=10, repeat=False, init_func=init)
+        gen = functools.partial(solver, ode_system, initial_value_condition, time_domain, verbose)
+
+        ani = animation.FuncAnimation(fig, run, gen, blit=False, interval=10, repeat=False, init_func=init)
         plt.show()

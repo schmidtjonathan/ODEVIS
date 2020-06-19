@@ -124,24 +124,15 @@ if __name__ == "__main__":
         exit(0)
 
     euler_solver = odevis.solver.Euler(
-        ode_system=ode_system,
         step_size=arg_stepsize,
-        initial_value_condition=initial_value_condition,
-        time_domain=time_domain,
     )
 
     heun_solver = odevis.solver.Heun(
-        ode_system=ode_system,
         step_size=arg_stepsize,
-        initial_value_condition=initial_value_condition,
-        time_domain=time_domain,
     )
 
     rk4_solver = odevis.solver.RK4(
-        ode_system=ode_system,
         step_size=arg_stepsize,
-        initial_value_condition=initial_value_condition,
-        time_domain=time_domain,
     )
 
     possible_solvers = dict(
@@ -151,6 +142,19 @@ if __name__ == "__main__":
     )
 
     if args.animate:
-        odevis.animate_solution(solver=possible_solvers[arg_solver])
+        odevis.animate_solution(
+            possible_solvers[arg_solver],
+            ode_system,
+            initial_value_condition,
+            time_domain,
+            axis_labels=["S", "I", "R"],
+            verbose=True
+        )
     else:
-        odevis.plot_solution(solver=possible_solvers[arg_solver])
+        odevis.plot_solution(
+            possible_solvers[arg_solver],
+            ode_system,
+            initial_value_condition,
+            time_domain,
+            axis_labels=["S", "I", "R"]
+        )
