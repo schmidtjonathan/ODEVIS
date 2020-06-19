@@ -1,6 +1,7 @@
 import argparse
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 import odevis
 
@@ -68,6 +69,7 @@ if __name__ == "__main__":
 
         ode_system = odevis.ODE_System([x_dot, y_dot])
         initial_value_condition = np.array([3.0, 1.0])
+        curve_labels = ["predator", "prey"]
 
     elif arg_mode == "pendulum":
         """
@@ -89,6 +91,7 @@ if __name__ == "__main__":
 
         ode_system = odevis.ODE_System([x_dot, y_dot])
         initial_value_condition = np.array([0.0, 5.0])
+        curve_labels = [r"$\theta$", r"$\dot{\theta}$"]
 
     else:
         print(f"Unknown mode {arg_mode}. (<mode> is one of {MODES})")
@@ -118,11 +121,14 @@ if __name__ == "__main__":
         y_extent=y_extent,
     )
 
-    direction_field.animate_solution(
+    odevis.visualization.set_style()
+
+    ani = direction_field.animate_solution(
         possible_solvers[arg_solver],
         ode_system,
         initial_value_condition,
         time_domain,
-        axis_labels=["S", "I", "R"],
+        curve_labels=curve_labels,
         verbose=True
     )
+    plt.show()

@@ -16,48 +16,71 @@ COLORS = dict(
     lgold = np.array([1, 1, 1]) - 0.5 * (np.array([1, 1, 1]) - np.array([174.0, 159.0, 109.0]) / 255.0),
 )
 
-# matplotlib settings
-plt.style.use("seaborn-whitegrid")
-plt.rcParams['axes.axisbelow'] = True
-plt.rcParams["figure.figsize"] = (14, 7)
-plt.rcParams["axes.prop_cycle"] = matplotlib.cycler(color=list(COLORS.values()))
+
+def set_style(rcParams=None):
+    # matplotlib settings
+    plt.style.use("seaborn-whitegrid")
+    plt.rcParams["axes.axisbelow"] = True
+    plt.rcParams["figure.figsize"] = (14, 7)
+    plt.rcParams["axes.prop_cycle"] = matplotlib.cycler(color=list(COLORS.values()))
+
+    if rcParams is not None:
+        for k, v in rcParams.items():
+            plt.rcParams[k] = v
 
 
-def plot_solution(solver, ode_system, initial_value_condition, time_domain, axis_labels=None):
-    fig, ax = plt.subplots(num=str(solver))
+def plot_solution(
+    solver,
+    ode_system,
+    initial_value_condition,
+    time_domain,
+    curve_labels=None,
+    num_xticks=10
+):
+    fig, ax = plt.subplots()
+    fig.suptitle(str(solver))
+    t_min, t_max = time_domain
+    if num_xticks > (t_max - t_min):
+        raise ValueError("You have to choose the number of x ticks that is less than the total time steps")
+    dt = int((t_max - t_min) / num_xticks)
+    ax.set_xticks(np.arange(t_min, t_max, dt) / solver.step_size)
+    ax.set_xticklabels(np.arange(t_min, t_max, dt).astype(int))
+    ax.set_xlabel("t")
+
     evaluations = solver.solve(
         ode_system, initial_value_condition, time_domain
     )
-
     for eq in range(len(ode_system)):
         ax.plot(
             evaluations[:, eq],
             color=f"C{eq}",
-            label=None if axis_labels is None else axis_labels[eq],
+            label=None if curve_labels is None else curve_labels[eq],
         )
-    if axis_labels is not None:
+    if curve_labels is not None:
         ax.legend()
     plt.show()
 
 
-def animate_solution(solver, ode_system, initial_value_condition, time_domain, axis_labels=None, verbose=True):
+def animate_solution(
+    solver,
+    ode_system,
+    initial_value_condition,
+    time_domain,
+    curve_labels=None,
+    num_xticks=10,
+    verbose=True,
+):
 
     def init():
         """ Initialize the animation
         Plot the vector field as background and initialize the line of the solution function
         """
 
-        ax.set_title("Time/Value space")
         t_min, t_max = time_domain
-
-        ax.set_xlim(
-            (t_min, t_max)
-        )
-
-        ax.set_xticks(np.arange(t_min, t_max))
+        dt = int((t_max - t_min) / num_xticks)
+        ax.set_xticks(np.arange(t_min, t_max + dt, dt) / solver.step_size)
+        ax.set_xticklabels(np.arange(t_min, t_max, dt).astype(int))
         ax.set_xlabel("t")
-        ax.axhline(y=0, color='k', lw=.8)
-        ax.axvline(x=0, color='k', lw=.8)
 
         for i, line in enumerate(over_time_lines):
             line.set_data(t_range, variable_data[i])
@@ -67,7 +90,7 @@ def animate_solution(solver, ode_system, initial_value_condition, time_domain, a
         t, evaluation = data
         for i, v in enumerate(evaluation):
             variable_data[i].append(v)
-        t_range.append(t)
+        t_range.append(t / solver.step_size)
 
         # Adjust y axis of the plot
         ax_y_min, ax_y_max = ax.get_ylim()
@@ -86,7 +109,8 @@ def animate_solution(solver, ode_system, initial_value_condition, time_domain, a
         for i, line in enumerate(over_time_lines):
             line.set_data(t_range, variable_data[i])
 
-    fig, ax = plt.subplots(num=str(solver))
+    fig, ax = plt.subplots()
+    fig.suptitle(str(solver))
 
     over_time_lines = [
         line for line, in [ax.plot([], [], color=f"C{i}") for i in range(len(ode_system))]
@@ -98,7 +122,7 @@ def animate_solution(solver, ode_system, initial_value_condition, time_domain, a
     gen = functools.partial(solver, ode_system, initial_value_condition, time_domain, verbose)
 
     ani = animation.FuncAnimation(fig, run, gen, blit=False, interval=10, repeat=False, init_func=init)
-    plt.show()
+    return ani
 
 
 class DirectionField2D(object):
@@ -156,7 +180,7 @@ class DirectionField2D(object):
 
         return axis
 
-    def animate_solution(self, solver, ode_system, initial_value_condition, time_domain, axis_labels=None, verbose=True):
+    def animate_solution(self, solver, ode_system, initial_value_condition, time_domain, curve_labels=None, verbose=True):
         """ Method that carries out the visualization (animation) of the numerical ODE solver """
 
         def init():
@@ -165,6 +189,8 @@ class DirectionField2D(object):
             """
 
             ax[0].set_title("Phase space")
+            ax[0].set_xlabel(curve_labels[0])
+            ax[0].set_ylabel(curve_labels[1])
             ax[1].set_title("Time/Value space")
 
             t_min, t_max = time_domain
@@ -179,6 +205,7 @@ class DirectionField2D(object):
             ax[1].set_xlabel("t")
             ax[1].axhline(y=0, color='k', lw=.8)
             ax[1].axvline(x=0, color='k', lw=.8)
+            ax[1].legend()
 
             self.visualize_direction_field(axis=ax[0])
             numerical_solution.set_data(xdata, ydata)
@@ -199,14 +226,16 @@ class DirectionField2D(object):
 
             return numerical_solution
 
-        fig, ax = plt.subplots(1, 2, num=str(solver))
+        fig, ax = plt.subplots(1, 2)
+        fig.suptitle(str(solver))
+
         numerical_solution, = ax[0].plot([], [], lw=2, color=COLORS["gold"])
-        x_t_line, = ax[1].plot([], [], lw=2, color=COLORS["red"])
-        y_t_line, = ax[1].plot([], [], lw=2, color=COLORS["dark"])
+        x_t_line, = ax[1].plot([], [], lw=2, color=COLORS["red"], label=curve_labels[0])
+        y_t_line, = ax[1].plot([], [], lw=2, color=COLORS["dark"], label=curve_labels[1])
         t_range = []
         xdata, ydata = [], []
 
         gen = functools.partial(solver, ode_system, initial_value_condition, time_domain, verbose)
 
         ani = animation.FuncAnimation(fig, run, gen, blit=False, interval=10, repeat=False, init_func=init)
-        plt.show()
+        return ani
