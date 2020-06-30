@@ -17,6 +17,7 @@ There are currently three solvers implemented:
 1. Euler-method ( `--solver euler` )
 2. Heun's method ( `--solver heun` )
 3. 4th order Runge-Kutta method ( `--solver rk4` )
+4. Runge-Kutta-Fehlberg method, a.k.a. RK45 (`--solver rk45`)
 
 The solvers can be simulated on different problems:
 
