@@ -7,7 +7,7 @@ import odevis
 
 
 MODES = ["lotka_volterra", "pendulum", "sir"]
-SOLVERS = ["euler", "heun", "rk4"]
+SOLVERS = ["euler", "heun", "rk4", "rk45"]
 
 
 if __name__ == "__main__":
@@ -139,10 +139,15 @@ if __name__ == "__main__":
         step_size=arg_stepsize,
     )
 
+    rk45_solver = odevis.solver.RK45(
+        step_size=arg_stepsize
+    )
+
     possible_solvers = dict(
         euler=euler_solver,
         heun=heun_solver,
-        rk4=rk4_solver
+        rk4=rk4_solver,
+        rk45=rk45_solver
     )
 
     odevis.visualization.set_style()
