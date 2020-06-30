@@ -42,13 +42,14 @@ class Solver(object):
 
         self.ode_system = odevis.ODE_System([eq for eq in ode_system])
         t_min, t_max = time_domain
-        print(f"Running simulation for t in [{t_min}, {t_max}] , dt = {self.step_size}")
+        if verbose:
+            print(f"Running simulation for t in [{t_min}, {t_max}] , dt = {self.step_size}")
         state = np.array(initial_value_condition, copy=True)
         for step in tqdm.tqdm(np.arange(t_min, t_max, self.step_size), disable=not verbose):
             yield step, state
             state = self._step(state)
-
-        print("Done!")
+        if verbose:
+            print("Done!")
 
 
 class Euler(Solver):

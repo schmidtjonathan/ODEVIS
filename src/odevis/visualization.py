@@ -12,8 +12,20 @@ COLORS = dict(
     red = np.array([141.0, 45.0, 57.0]) / 255.0,
     gold = np.array([174.0, 159.0, 109.0]) / 255.0,
     gray = np.array([175.0, 179.0, 183.0]) / 255.0,
-    lred = np.array([1, 1, 1]) - 0.5 * (np.array([1, 1, 1]) - np.array([141.0, 45.0, 57.0]) / 255.0),
-    lgold = np.array([1, 1, 1]) - 0.5 * (np.array([1, 1, 1]) - np.array([174.0, 159.0, 109.0]) / 255.0),
+    lred = np.array([1., 1., 1.]) - 0.5 * (np.array([1., 1., 1.]) - np.array([141.0, 45.0, 57.0]) / 255.0),
+    lgold = np.array([1., 1., 1.]) - 0.5 * (np.array([1., 1., 1.]) - np.array([174.0, 159.0, 109.0]) / 255.0),
+    b1 = np.array([65.0, 90.0, 140.0]) / 255.0,
+    g1 = np.array([130.0, 185.0, 160.0]) / 255.0,
+    r1 = np.array([200.0, 80.0, 60.0]) / 255.0,
+    y1 = np.array([215.0, 180.0, 105.0]) / 255.0,
+    b2 = np.array([0.0, 105.0, 170.0]) / 255.0,
+    g2 = np.array([125.0, 165.0, 75.0]) / 255.0,
+    r2 = np.array([175.0, 110.0, 150.0]) / 255.0,
+    y2 = np.array([210.0, 150.0, 0.0]) / 255.0,
+    b3 = np.array([80.0, 170.0, 200.0]) / 255.0,
+    g3 = np.array([50.0, 110.0, 30.0]) / 255.0,
+    r3 = np.array([180.0, 160.0, 150.0]) / 255.0,
+    y3 = np.array([145.0, 150.0, 70.0]) / 255.0,
 )
 
 
@@ -21,7 +33,6 @@ def set_style(rcParams=None):
     # matplotlib settings
     plt.style.use("seaborn-whitegrid")
     plt.rcParams["axes.axisbelow"] = True
-    plt.rcParams["figure.figsize"] = (14, 7)
     plt.rcParams["axes.prop_cycle"] = matplotlib.cycler(color=list(COLORS.values()))
 
     if rcParams is not None:
