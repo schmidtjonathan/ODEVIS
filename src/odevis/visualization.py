@@ -99,6 +99,7 @@ def animate_solution(
     def run(data):
         """ Update the data of the animation """
         t, evaluation = data
+        evaluation = evaluation.numpy()
         for i, v in enumerate(evaluation):
             variable_data[i].append(v)
         t_range.append(t / solver.step_size)

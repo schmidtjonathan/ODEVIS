@@ -1,6 +1,6 @@
 import argparse
 
-import numpy as np
+import torch
 import matplotlib.pyplot as plt
 
 import odevis
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         time_domain = (0.0, 20.0)
 
         ode_system = odevis.ODE_System([x_dot, y_dot])
-        initial_value_condition = np.array([3.0, 1.0])
+        initial_value_condition = torch.tensor([3.0, 1.0])
         curve_labels = ["predator", "prey"]
 
     elif arg_mode == "pendulum":
@@ -89,14 +89,14 @@ if __name__ == "__main__":
             g = 9.8     # gravity
             L = 3.0     # lenght of pendulum
 
-            return -mu * y - (g / L) * np.sin(x)
+            return -mu * y - (g / L) * torch.sin(x)
 
         x_extent = (-2.0, 15)
         y_extent = (-6.0, 6.0)
         time_domain = (0.0, 20.0)
 
         ode_system = odevis.ODE_System([x_dot, y_dot])
-        initial_value_condition = np.array([0.0, 5.0])
+        initial_value_condition = torch.tensor([0.0, 5.0])
         curve_labels = [r"$\theta$", r"$\dot{\theta}$"]
 
     elif arg_mode == "sir":
@@ -120,7 +120,7 @@ if __name__ == "__main__":
         time_domain = (0.0, 60.0)
 
         ode_system = odevis.ODE_System([x_dot, y_dot, z_dot])
-        initial_value_condition = np.array([N-1000.0, 1000.0, 0.0])
+        initial_value_condition = torch.tensor([N-1000.0, 1000.0, 0.0])
         curve_labels = ["S", "I", "R"]
 
     else:
