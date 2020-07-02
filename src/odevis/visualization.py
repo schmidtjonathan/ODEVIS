@@ -60,7 +60,7 @@ def plot_solution(
 
     evaluations = solver.solve(
         ode_system, initial_value_condition, time_domain
-    )
+    ).numpy()
     for eq in range(len(ode_system)):
         ax.plot(
             evaluations[:, eq],

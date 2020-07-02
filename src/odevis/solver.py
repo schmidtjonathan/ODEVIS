@@ -1,5 +1,5 @@
-import numpy as np
 import tqdm
+import torch
 
 import odevis
 
@@ -32,7 +32,7 @@ class Solver(object):
         num_equations = len(ode_system)
         t_min, t_max = time_domain
         num_steps = int((t_max - t_min) / self.step_size)
-        result = np.zeros(shape=(num_steps, num_equations))
+        result = torch.zeros(size=(num_steps, num_equations), dtype=torch.float64)
         for step, (t, state) in enumerate(self(ode_system, initial_value_condition, time_domain, verbose=False)):
             result[step, :] = state
         return result
@@ -44,8 +44,8 @@ class Solver(object):
         t_min, t_max = time_domain
         if verbose:
             print(f"Running simulation for t in [{t_min}, {t_max}] , dt = {self.step_size}")
-        state = np.array(initial_value_condition, copy=True)
-        for step in tqdm.tqdm(np.arange(t_min, t_max, self.step_size), disable=not verbose):
+        state = initial_value_condition.clone().to(torch.float64)
+        for step in tqdm.tqdm(torch.arange(t_min, t_max, self.step_size), disable=not verbose):
             yield step, state
             state = self._step(state)
         if verbose:

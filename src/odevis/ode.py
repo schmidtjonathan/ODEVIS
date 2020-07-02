@@ -1,4 +1,4 @@
-import numpy as np
+import torch
 
 
 class ODE_System(object):
@@ -10,8 +10,9 @@ class ODE_System(object):
 
     def __call__(self, var):
         assert var.shape[0] == self.num_equations
-        apply = np.vectorize(lambda fn, *x: fn(*x))
-        return apply(self.equations, *var)
+        return torch.stack(
+            [f(*var) for f in self.equations],
+        )
 
     def __len__(self):
         return self.num_equations
